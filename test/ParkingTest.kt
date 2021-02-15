@@ -42,8 +42,8 @@ class OutputClue(input: String, val output: String, isPrivate: Boolean, hint: St
         }
         // if all common lines are correct, but sizes are different.
         if (hisLines.size != myLines.size) {
-            return toFailure("Your output contains ${hisLines.size} lines " +
-                    "instead of ${myLines.size}.")
+            return toFailure("Your output contains ${hisLines.size}" +
+                    " lines instead of ${myLines.size}.")
         }
         return CheckResult.correct();
     }
@@ -56,31 +56,78 @@ fun outputCase(
         hint: String? = null
 ) = testCase(OutputClue(input, output, isPrivate, hint), input)
 
+/** Trim Starts of all lines and trim empty lines. */
+fun String.trimAllIndents() = this.lines()
+        .map { it.trimStart() }
+        .dropWhile { it.isBlank() }
+        .dropLastWhile { it.isBlank() }
+        .joinToString("\n")
 
 
-class Task2Test : ParkingTest<OutputClue>() {
+class Task3Test : ParkingTest<OutputClue>() {
 
-    override fun generate() = listOf(
-            outputCase("park KA-01-HH-1234 White",
-                    "White car parked in spot 2.",
-                    hint = "See example 1."),
+    override fun generate(): List<TestCase<OutputClue>> {
+        // 20 cars
+        val stripedCars = List(10) { i ->
+            listOf("park KA-$i-HH-9999 White",
+                    "park KA-$i-HH-3672 Green")
+        }
+                .flatten()
+                .joinToString("\n")
 
-            outputCase("leave 1",
-                    "Spot 1 is free.",
-                    hint = "See example 2."),
+        val stripedAns = List(10) { i ->
+            listOf("White car parked in spot ${2 * i + 1}.",
+                    "Green car parked in spot ${2 * i + 2}.")
+        }
+                .flatten()
+                .joinToString("\n")
 
-            outputCase("leave 2",
-                    "There is no car in spot 2.",
-                    hint = "See example 3."),
 
-            outputCase("park KA-01-HH-1234 Red",
-                    "Red car parked in spot 2.", true,
-                    hint = "Try to test another colors."),
-
-            outputCase("park 1ABC234 Blue",
-                    "Blue car parked in spot 2.", true,
-                    hint = "Try to test another registration numbers.")
-    )
+        return listOf(
+                outputCase(
+                        """$stripedCars
+                            park Rs-P-N-21 Red
+                            leave 1
+                            park Rs-P-N-21 Red
+                            exit
+                        """.trimAllIndents(),
+                        """
+                            $stripedAns
+                            Sorry, the parking lot is full.
+                            Spot 1 is free.
+                            Red car parked in spot 1.
+                        """.trimAllIndents(),
+                        hint = "See example 1."),
+                outputCase(
+                        """
+                            $stripedCars
+                            park Rs-P-N-21 Red
+                            park ABC Green
+                            leave 5
+                            leave 1
+                            leave 20
+                            park Rs-P-N-21 White
+                            park Rs-P-N-22 Blue
+                            park Rs-P-N-23 Red
+                            park A B
+                            exit
+                        """.trimAllIndents(),
+                        """
+                            $stripedAns
+                            Sorry, the parking lot is full.
+                            Sorry, the parking lot is full.
+                            Spot 5 is free.
+                            Spot 1 is free.
+                            Spot 20 is free.
+                            White car parked in spot 1.
+                            Blue car parked in spot 5.
+                            Red car parked in spot 20.
+                            Sorry, the parking lot is full.
+                        """.trimAllIndents(),
+                        isPrivate = true,
+                        hint = "Spots should be assigned in ascending order.")
+        )
+    }
 
 
     override fun check(reply: String, clue: OutputClue): CheckResult {

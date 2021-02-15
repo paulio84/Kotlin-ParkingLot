@@ -4,20 +4,23 @@ import java.util.Scanner
 
 fun main() {
     val scanner = Scanner(System.`in`)
-    val parkingLot = ParkingLot(numSpaces = 2)
+    val parkingLot = ParkingLot(numSpaces = 20)
 
-    val input = scanner.nextLine()
-    when (input.substring(0, input.indexOf(' '))) {
-        "park" -> {
-            val (registration, colour) = input.substring(input.indexOf(' ') + 1).split(" ").toTypedArray()
-            val response = parkingLot.park(Vehicle(registration, colour))
-            println(response)
+    var input = scanner.nextLine()
+    while (input.toLowerCase() != "exit") {
+        when (input.substring(0, input.indexOf(' '))) {
+            "park" -> {
+                val (registration, colour) = input.substring(input.indexOf(' ') + 1).split(" ").toTypedArray()
+                val response = parkingLot.park(Vehicle(registration, colour))
+                println(response)
+            }
+            "leave" -> {
+                val parkingSpace = input.substring(input.indexOf(' ') + 1).toInt()
+                val response = parkingLot.leave(parkingSpace)
+                println(response)
+            }
         }
-        "leave" -> {
-            val parkingSpace = input.substring(input.indexOf(' ') + 1).toInt()
-            val response = parkingLot.leave(parkingSpace)
-            println(response)
-        }
+        input = scanner.nextLine()
     }
 }
 
@@ -26,16 +29,16 @@ class ParkingLot(numSpaces: Int) {
 
     init {
         this.spaces = List(numSpaces) { ParkingSpace() }.toSet()
-        this.spaces.elementAt(0).vehicle = Vehicle(registration = "ABC-123", colour = "Red")
     }
 
     fun park(vehicle: Vehicle): String {
         val spot = findNextAvailableParkingSpace()
-        if (spot >= 0) {
+        return if (spot >= 0) {
             this.spaces.elementAt(spot).vehicle = vehicle
+            "${vehicle.colour} car parked in spot ${spot + 1}."
+        } else {
+            "Sorry, the parking lot is full."
         }
-
-        return "${vehicle.colour} car parked in spot ${spot + 1}."
     }
 
     private fun findNextAvailableParkingSpace(): Int =
