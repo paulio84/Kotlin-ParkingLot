@@ -63,12 +63,10 @@ class ParkingLot(numSpaces: Int) {
     fun leave(spot: Int): String {
         val parkingSpace = this.spaces.elementAt(spot - 1)
 
-        parkingSpace.vehicle?.let {
+        return parkingSpace.vehicle?.let {
             parkingSpace.vehicle = null
-            return "Spot $spot is free."
-        }
-
-        return "There is no car in spot $spot."
+            "Spot $spot is free."
+        } ?: "There is no car in spot $spot."
     }
 
     fun status(): String {
